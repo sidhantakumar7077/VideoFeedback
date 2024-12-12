@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, PermissionsAndroid, Platform } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, PermissionsAndroid, Platform, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import KeepAwake from 'react-native-keep-awake';
+import { Video } from 'react-native-compressor';
+import RNFS from 'react-native-fs';
 
 const Index = () => {
+    
     const navigation = useNavigation();
     const [isRecording, setIsRecording] = useState(false);
     const [recordedVideoUri, setRecordedVideoUri] = useState(null);
@@ -38,7 +41,6 @@ const Index = () => {
         return () => clearInterval(interval);
     }, [isRecording]);
 
-    // Request permissions for Android
     async function requestCameraPermission() {
         try {
             const cameraPermission = await PermissionsAndroid.request(
@@ -105,6 +107,7 @@ const Index = () => {
                     onRecordingFinished: (video) => {
                         setRecordedVideoUri(video.path);
                         setIsRecording(false);
+                        compressVideo(video.path);
                     },
                     onRecordingError: (error) => {
                         console.error('Recording error:', error);
@@ -117,12 +120,66 @@ const Index = () => {
         }
     };
 
+    const compressVideo = async (inputPath) => {
+        try {
+            console.log('Compression started...');
+            const compressedVideoPath = await Video.compress(inputPath, {
+                compressionMethod: 'manual',
+                quality: 'low', // Choose 'low' for maximum compression
+                bitrate: 400000, // Set lower bitrate for more compression (1 Mbps)
+                frameRate: 10, // Lower frame rate for further size reduction
+                minimumFileSizeForCompression: 1, // Compress even the smallest files
+            });
+
+            console.log('Compression completed successfully!');
+            console.log('Compressed video path:', compressedVideoPath);
+
+            const fileInfo = await RNFS.stat(compressedVideoPath);
+            console.log('Compressed video file info:', fileInfo);
+
+            await uploadVideo(compressedVideoPath);
+        } catch (error) {
+            console.error('Error during video compression:', error);
+        }
+    };
+
+    const uploadVideo = async (videoUri) => {
+        try {
+            const formData = new FormData();
+            formData.append('feedback_video', {
+                uri: Platform.OS === 'android' ? `file://${videoUri}` : videoUri,
+                type: 'video/mp4',
+                name: 'compressed_video.mp4',
+            });
+
+            const response = await fetch('https://admin.33crores.com/api/save-feedback-video', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            const responseData = await response.json();
+            if (response.ok) {
+                console.log('Video uploaded successfully', responseData);
+                navigation.navigate('ThankYouPage');
+            } else {
+                console.error('Video upload failed');
+                Alert.alert('Error', 'Video upload failed');
+            }
+        } catch (error) {
+            console.error('Error uploading video:', error);
+            Alert.alert('Error', `Error uploading video: ${error.message}`);
+        }
+    };
+
     const stopRecording = async () => {
         try {
             if (cameraRef.current) {
                 await cameraRef.current.stopRecording();
                 setIsRecording(false);
-                navigation.navigate('ThankYouPage');
             }
         } catch (error) {
             console.error('Error stopping recording:', error);
@@ -149,6 +206,7 @@ const Index = () => {
                             device={frontCamera}
                             isActive
                             video={true}
+                            audio={true}
                             onInitialized={() => setCameraInitialized(true)}
                         />
                         {isRecording && (
@@ -191,8 +249,8 @@ const styles = StyleSheet.create({
         flex: 1,
         borderWidth: 5,
         borderColor: '#00e0ff',
-        // borderRadius: 20,
-        // overflow: 'hidden',
+        borderRadius: 20,
+        overflow: 'hidden',
     },
     container: {
         flex: 1,
