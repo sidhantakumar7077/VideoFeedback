@@ -10,7 +10,7 @@ import { Video } from 'react-native-compressor';
 import RNFS from 'react-native-fs';
 
 const Index = () => {
-    
+
     const navigation = useNavigation();
     const [isRecording, setIsRecording] = useState(false);
     const [recordedVideoUri, setRecordedVideoUri] = useState(null);
@@ -249,8 +249,6 @@ const styles = StyleSheet.create({
         flex: 1,
         borderWidth: 5,
         borderColor: '#00e0ff',
-        borderRadius: 20,
-        overflow: 'hidden',
     },
     container: {
         flex: 1,
