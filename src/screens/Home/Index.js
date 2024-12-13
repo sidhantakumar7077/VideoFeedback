@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, Modal } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Modal, Animated, Easing } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -9,10 +9,47 @@ const Index = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const openModal = () => { setIsModalVisible(true) };
   const closeModal = () => { setIsModalVisible(false) };
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.2,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, []);
 
   const confirmRecording = () => {
-    // setIsModalVisible(false);
     navigation.navigate('VideoRecordPage');
+  };
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.8,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 3,
+      tension: 40,
+      useNativeDriver: true,
+    }).start(() => {
+      confirmRecording();
+    });
   };
 
   return (
@@ -21,9 +58,16 @@ const Index = () => {
         source={require('../../assets/images/demoLogo.jpg')} // Replace with your logo path
         style={styles.logo}
       />
-      <TouchableOpacity onPress={confirmRecording} style={styles.button}>
-        <Text style={styles.buttonText}>Start Recording</Text>
-      </TouchableOpacity>
+
+      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+        <TouchableOpacity
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          style={styles.pModalCheckCircle}
+        >
+          <Text style={styles.buttonText}>Start Recording</Text>
+        </TouchableOpacity>
+      </Animated.View>
 
       <Modal
         animationType="slide"
@@ -68,18 +112,9 @@ const styles = StyleSheet.create({
   logo: {
     position: 'absolute',
     top: 100,
-    // left: 20,
     width: 180, // Adjust the width of the logo
     height: 100, // Adjust the height of the logo
     resizeMode: 'contain',
-  },
-  button: {
-    backgroundColor: '#c9170a',
-    height: 150,
-    width: 150,
-    borderRadius: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   buttonText: {
     width: '90%',
@@ -122,5 +157,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 7
+  },
+  pModalCheckCircle: {
+    marginBottom: 20,
+    width: 120,
+    height: 120,
+    borderRadius: 100,
+    backgroundColor: '#c9170a',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

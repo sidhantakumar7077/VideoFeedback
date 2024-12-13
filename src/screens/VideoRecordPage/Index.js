@@ -102,7 +102,7 @@ const Index = () => {
 
     useEffect(() => {
         if (hasPermission && frontCamera && cameraInitialized) {
-            // startRecording();
+            startRecording();
         }
     }, [hasPermission, frontCamera, cameraInitialized]);
 
@@ -176,6 +176,7 @@ const Index = () => {
             videos.push(videoPath);
             await AsyncStorage.setItem('storedVideos', JSON.stringify(videos));
             console.log('Video stored locally:', videoPath);
+            navigation.navigate('ThankYouPage');
         } catch (error) {
             console.error('Error storing video locally:', error);
         } finally {
@@ -217,7 +218,7 @@ const Index = () => {
             const responseData = await response.json();
             if (response.ok) {
                 console.log('Video uploaded successfully', responseData);
-                // navigation.navigate('ThankYouPage');
+                navigation.navigate('ThankYouPage');
             } else {
                 console.error('Video upload failed');
                 Alert.alert('Error', 'Video upload failed');
@@ -270,7 +271,7 @@ const Index = () => {
                                     size={70}
                                     width={8}
                                     fill={(timer / 60) * 100}
-                                    tintColor="#00e0ff"
+                                    tintColor="#fff"
                                     backgroundColor="#3d5875"
                                 >
                                     {() => (

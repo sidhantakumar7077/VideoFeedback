@@ -26,7 +26,7 @@ const Login = () => {
             >
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' }}>
                     <Image
-                        source={require('../../assets/images/whitelogo.png')}
+                        source={require('../../assets/images/transLemoLogo.png')}
                         style={{ height: 130, width: 130, resizeMode: 'contain' }}
                     />
                 </View>
