@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, PermissionsAndroid, Platform, Alert, Modal, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, PermissionsAndroid, Platform, Alert, Modal, ActivityIndicator, ImageBackground } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -8,6 +8,8 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import KeepAwake from 'react-native-keep-awake';
 import { Video } from 'react-native-compressor';
 import RNFS from 'react-native-fs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
 
 const Index = () => {
 
@@ -17,6 +19,7 @@ const Index = () => {
     const [hasPermission, setHasPermission] = useState(false);
     const [timer, setTimer] = useState(60);
     const [cameraInitialized, setCameraInitialized] = useState(false);
+    const [isConnected, setIsConnected] = useState(true);
 
     const [loaderModalVisible, setLoaderModalVisible] = useState(false);
     const openLoaderModal = () => setLoaderModalVisible(true);
@@ -99,9 +102,20 @@ const Index = () => {
 
     useEffect(() => {
         if (hasPermission && frontCamera && cameraInitialized) {
-            startRecording();
+            // startRecording();
         }
     }, [hasPermission, frontCamera, cameraInitialized]);
+
+    useEffect(() => {
+        const unsubscribe = NetInfo.addEventListener(state => {
+            setIsConnected(state.isConnected);
+            if (state.isConnected) {
+                uploadStoredVideos();
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const startRecording = async () => {
         try {
@@ -142,11 +156,43 @@ const Index = () => {
             const fileInfo = await RNFS.stat(compressedVideoPath);
             console.log('Compressed video file info:', fileInfo);
 
-            await uploadVideo(compressedVideoPath);
+            // await uploadVideo(compressedVideoPath);
+            if (isConnected) {
+                await uploadVideo(compressedVideoPath);
+            } else {
+                await storeVideoLocally(compressedVideoPath);
+            }
         } catch (error) {
             console.error('Error during video compression:', error);
             Alert.alert('Error', `Error during video compression: ${error.message}`);
             closeLoaderModal();
+        }
+    };
+
+    const storeVideoLocally = async (videoPath) => {
+        try {
+            const storedVideos = await AsyncStorage.getItem('storedVideos');
+            const videos = storedVideos ? JSON.parse(storedVideos) : [];
+            videos.push(videoPath);
+            await AsyncStorage.setItem('storedVideos', JSON.stringify(videos));
+            console.log('Video stored locally:', videoPath);
+        } catch (error) {
+            console.error('Error storing video locally:', error);
+        } finally {
+            setLoaderModalVisible(false);
+        }
+    };
+
+    const uploadStoredVideos = async () => {
+        try {
+            const storedVideos = await AsyncStorage.getItem('storedVideos');
+            const videos = storedVideos ? JSON.parse(storedVideos) : [];
+            for (const videoPath of videos) {
+                await uploadVideo(videoPath);
+            }
+            await AsyncStorage.removeItem('storedVideos');
+        } catch (error) {
+            console.error('Error uploading stored videos:', error);
         }
     };
 
@@ -171,7 +217,7 @@ const Index = () => {
             const responseData = await response.json();
             if (response.ok) {
                 console.log('Video uploaded successfully', responseData);
-                navigation.navigate('ThankYouPage');
+                // navigation.navigate('ThankYouPage');
             } else {
                 console.error('Video upload failed');
                 Alert.alert('Error', 'Video upload failed');
@@ -233,23 +279,24 @@ const Index = () => {
                                 </AnimatedCircularProgress>
                             </View>
                         )}
-                        <View style={styles.controlContainer}>
+                        {/* /* <View style={styles.controlContainer}> */}
+                        <ImageBackground source={require('../../assets/images/cameraBg.png')} style={styles.controlContainer} resizeMode="contain">
                             {isRecording ?
                                 <TouchableOpacity onPress={stopRecording}>
-                                    <FontAwesome name="stop-circle-o" size={100} color="#c9170a" />
+                                    <MaterialCommunityIcons name="circle-slice-8" size={100} color="#c9170a" />
                                 </TouchableOpacity>
                                 :
                                 <TouchableOpacity onPress={startRecording}>
-                                    <MaterialCommunityIcons name="circle-slice-8" size={100} color="#fff" />
+                                    <MaterialCommunityIcons name="circle-slice-8" size={100} color="#10e3d6" />
                                 </TouchableOpacity>
                             }
-                        </View>
+                        </ImageBackground>
+                        {/* </View> */}
                     </>
                 ) : (
                     <Text style={{ color: '#000' }}>Requesting Camera Permission</Text>
                 )}
             </View>
-
             <Modal
                 animationType="fade"
                 transparent={true}
@@ -270,7 +317,9 @@ const styles = StyleSheet.create({
     outerContainer: {
         flex: 1,
         borderWidth: 5,
-        borderColor: '#00e0ff',
+        borderColor: '#fff',
+        borderRadius: 20,
+        overflow: 'hidden',
     },
     container: {
         flex: 1,
@@ -290,8 +339,8 @@ const styles = StyleSheet.create({
     },
     controlContainer: {
         position: 'absolute',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        height: 140,
+        backgroundColor: 'rgba(255, 250, 250, 0.7)',
+        height: 230,
         width: '100%',
         bottom: 0,
         alignItems: 'center',

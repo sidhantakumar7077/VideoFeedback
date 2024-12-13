@@ -50,16 +50,20 @@ const App = () => {
       <StatusBar backgroundColor="#c9170a" barStyle="light-content" />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {showSplash ? (<Stack.Screen name="SplashScreen" component={SplashScreen} options={{ presentation: 'modal', animationTypeForReplace: 'push', animation: 'slide_from_right' }} />) : null}
-        {!isConnected ? (
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="VideoRecordPage" component={VideoRecordPage} />
+        <Stack.Screen name="ThankYouPage" component={ThankYouPage} />
+        {/* {!isConnected ?
           <Stack.Screen name="NoInternet" component={NoInternet} />
-        ) : (
+          :
           <>
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="Home" component={Home} />
             <Stack.Screen name="VideoRecordPage" component={VideoRecordPage} />
             <Stack.Screen name="ThankYouPage" component={ThankYouPage} />
           </>
-        )}
+        } */}
       </Stack.Navigator>
     </NavigationContainer>
   )
