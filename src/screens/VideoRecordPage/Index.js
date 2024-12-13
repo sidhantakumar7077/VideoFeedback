@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, PermissionsAndroid, Platform, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, PermissionsAndroid, Platform, Alert, Modal, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -17,6 +17,10 @@ const Index = () => {
     const [hasPermission, setHasPermission] = useState(false);
     const [timer, setTimer] = useState(60);
     const [cameraInitialized, setCameraInitialized] = useState(false);
+
+    const [loaderModalVisible, setLoaderModalVisible] = useState(false);
+    const openLoaderModal = () => setLoaderModalVisible(true);
+    const closeLoaderModal = () => setLoaderModalVisible(false);
 
     const devices = useCameraDevices();
     const frontCamera = devices.find(device => device.position === 'front');
@@ -122,6 +126,7 @@ const Index = () => {
 
     const compressVideo = async (inputPath) => {
         try {
+            openLoaderModal();
             console.log('Compression started...');
             const compressedVideoPath = await Video.compress(inputPath, {
                 compressionMethod: 'manual',
@@ -140,6 +145,8 @@ const Index = () => {
             await uploadVideo(compressedVideoPath);
         } catch (error) {
             console.error('Error during video compression:', error);
+            Alert.alert('Error', `Error during video compression: ${error.message}`);
+            closeLoaderModal();
         }
     };
 
@@ -172,6 +179,8 @@ const Index = () => {
         } catch (error) {
             console.error('Error uploading video:', error);
             Alert.alert('Error', `Error uploading video: ${error.message}`);
+        } finally {
+            setLoaderModalVisible(false);
         }
     };
 
@@ -240,6 +249,19 @@ const Index = () => {
                     <Text style={{ color: '#000' }}>Requesting Camera Permission</Text>
                 )}
             </View>
+
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={loaderModalVisible}
+                onRequestClose={closeLoaderModal}
+            >
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+                    <View style={{ padding: 20, backgroundColor: '#fff', borderRadius: 10 }}>
+                        <ActivityIndicator size="large" color="#0000ff" />
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
