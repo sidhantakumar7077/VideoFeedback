@@ -198,6 +198,7 @@ const Index = () => {
     };
 
     const uploadVideo = async (videoUri) => {
+        var access_token = await AsyncStorage.getItem('accessToken');
         try {
             const formData = new FormData();
             formData.append('feedback_video', {
@@ -212,6 +213,7 @@ const Index = () => {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${access_token}`,
                 },
             });
 

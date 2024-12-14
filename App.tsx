@@ -21,6 +21,8 @@ import ThankYouPage from './src/screens/ThankYouPage/Index'
 
 const Stack = createNativeStackNavigator();
 
+export const Base_url = 'https://admin.33crores.com/';
+
 const App = () => {
 
   const [showSplash, setShowSplash] = useState(true);
@@ -45,25 +47,33 @@ const App = () => {
     }, 5000)
   }, []);
 
+  useEffect(() => {
+    const fetchAccessToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('accessToken');
+        console.log("accessToken", token);
+        if (token) {
+          setAccess_token(token);
+        }
+      } catch (error) {
+        console.error('Failed to fetch access token:', error);
+      }
+    };
+    fetchAccessToken();
+    setTimeout(() => {
+      setShowSplash(false);
+    }, 5000);
+  }, []);
+
   return (
     <NavigationContainer>
       <StatusBar backgroundColor="#c9170a" barStyle="light-content" />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {showSplash ? (<Stack.Screen name="SplashScreen" component={SplashScreen} options={{ presentation: 'modal', animationTypeForReplace: 'push', animation: 'slide_from_right' }} />) : null}
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="Home" component={Home} />
+        {access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="Login" component={Login} />}
+        {!access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="Login" component={Login} />}
         <Stack.Screen name="VideoRecordPage" component={VideoRecordPage} />
         <Stack.Screen name="ThankYouPage" component={ThankYouPage} />
-        {/* {!isConnected ?
-          <Stack.Screen name="NoInternet" component={NoInternet} />
-          :
-          <>
-            <Stack.Screen name="Login" component={Login} />
-            <Stack.Screen name="Home" component={Home} />
-            <Stack.Screen name="VideoRecordPage" component={VideoRecordPage} />
-            <Stack.Screen name="ThankYouPage" component={ThankYouPage} />
-          </>
-        } */}
       </Stack.Navigator>
     </NavigationContainer>
   )

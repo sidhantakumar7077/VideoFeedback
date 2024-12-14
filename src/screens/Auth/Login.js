@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, Image, ImageBackground, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { FloatingLabelInput } from 'react-native-floating-label-input';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Base_url } from '../../../App';
 
 const Login = () => {
     const navigation = useNavigation();
@@ -10,6 +12,57 @@ const Login = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const [showError, setShowError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+    const handleLogin = async () => {
+        setIsLoading(true);
+        setShowError(false);
+        if (!email || !password) {
+            setErrorMessage('Please fill all fields');
+            setShowError(true);
+            setIsLoading(false);
+            setTimeout(() => {
+                setShowError(false);
+                setErrorMessage('');
+            }, 10000);
+            return;
+        }
+        try {
+            const response = await fetch(`${Base_url}api/check-unit-login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_name: email,
+                    password: password,
+                }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                await AsyncStorage.setItem('accessToken', data.data.token);
+                // console.log("object", data.data.token);
+                setIsLoading(false);
+                navigation.navigate('Home');
+            } else {
+                setIsLoading(false);
+                setErrorMessage(data.message || 'Login failed. Please try again.');
+                setShowError(true);
+                setTimeout(() => {
+                    setShowError(false);
+                    setErrorMessage('');
+                }, 10000);
+            }
+        } catch (error) {
+            setIsLoading(false);
+            setErrorMessage('An error occurred. Please try again later.');
+            console.log("error", error);
+            setShowError(true);
+            setTimeout(() => {
+                setShowError(false);
+                setErrorMessage('');
+            }, 10000);
+        }
+    };
 
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' }}>
@@ -34,7 +87,7 @@ const Login = () => {
                     <Text style={styles.welcomeText}>Welcome</Text>
                     <Text style={styles.loginPrompt}>Login to continue</Text>
                     <FloatingLabelInput
-                        label="Email"
+                        label="Username"
                         value={email}
                         customLabelStyles={{
                             colorFocused: '#c80100',
@@ -44,7 +97,8 @@ const Login = () => {
                             backgroundColor: '#ffffff',
                             paddingHorizontal: 5,
                         }}
-                        keyboardType="email-address"
+                        keyboardType="default"
+                        autoCapitalize='none'
                         onChangeText={setEmail}
                         containerStyles={{
                             borderWidth: 0.5,
@@ -70,6 +124,7 @@ const Login = () => {
                         }}
                         secureTextEntry
                         onChangeText={setPassword}
+                        autoCapitalize="none"
                         containerStyles={{
                             borderWidth: 0.5,
                             borderColor: '#353535',
@@ -87,20 +142,12 @@ const Login = () => {
                     {isLoading ? (
                         <ActivityIndicator size="large" color="#c80100" />
                     ) : (
-                        <>
-                            <TouchableOpacity
-                                onPress={() => navigation.navigate('Home')}
-                                style={styles.button}
-                            >
-                                <Text style={styles.buttonText}>SUBMIT</Text>
-                            </TouchableOpacity>
-                            {/* <View style={styles.registerPrompt}>
-                                <Text style={styles.registerText}>Not registered yet?</Text>
-                                <TouchableOpacity>
-                                    <Text style={styles.registerLink}> Register</Text>
-                                </TouchableOpacity>
-                            </View> */}
-                        </>
+                        <TouchableOpacity
+                            onPress={handleLogin}
+                            style={styles.button}
+                        >
+                            <Text style={styles.buttonText}>SUBMIT</Text>
+                        </TouchableOpacity>
                     )}
                 </View>
             </ImageBackground>
