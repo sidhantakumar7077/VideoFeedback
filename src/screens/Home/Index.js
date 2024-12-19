@@ -87,7 +87,7 @@ const Index = () => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../../assets/images/demoLogo.jpg')} // Replace with your logo path
+        source={require('../../assets/images/logo_white.png')} // Replace with your logo path
         style={styles.logo}
       />
 
@@ -100,6 +100,13 @@ const Index = () => {
           <Text style={styles.buttonText}>Start Recording</Text>
         </TouchableOpacity>
       </Animated.View>
+
+      <View style={{ width: '100%', height: 200, position: 'absolute', bottom: 0 }}>
+        <Image
+          source={require('../../assets/images/frontpageimg1.jpg')} // Replace with your logo path
+          style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
+        />
+      </View>
     </View>
   );
 };
@@ -109,10 +116,10 @@ export default Index;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#383837',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    // padding: 20,
   },
   logo: {
     position: 'absolute',

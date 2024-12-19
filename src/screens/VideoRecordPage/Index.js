@@ -145,8 +145,8 @@ const Index = () => {
             const compressedVideoPath = await Video.compress(inputPath, {
                 compressionMethod: 'manual',
                 quality: 'low', // Choose 'low' for maximum compression
-                bitrate: 400000, // Set lower bitrate for more compression (1 Mbps)
-                frameRate: 10, // Lower frame rate for further size reduction
+                bitrate: 450000, // Set lower bitrate for more compression (1 Mbps)
+                frameRate: 13, // Lower frame rate for further size reduction
                 minimumFileSizeForCompression: 1, // Compress even the smallest files
             });
 
@@ -220,7 +220,7 @@ const Index = () => {
             const responseData = await response.json();
             if (response.ok) {
                 console.log('Video uploaded successfully', responseData);
-                navigation.navigate('ThankYouPage');
+                navigation.navigate('ThankYouPage', responseData.data.id);
             } else {
                 console.error('Video upload failed');
                 Alert.alert('Error', 'Video upload failed');
@@ -283,7 +283,7 @@ const Index = () => {
                             </View>
                         )}
                         {/* /* <View style={styles.controlContainer}> */}
-                        <ImageBackground source={require('../../assets/images/cameraBg.png')} style={styles.controlContainer} resizeMode="contain">
+                        <ImageBackground source={require('../../assets/images/frontpageimg1.jpg')} style={styles.controlContainer} resizeMode="cover">
                             {isRecording ?
                                 <TouchableOpacity onPress={stopRecording}>
                                     <MaterialCommunityIcons name="circle-slice-8" size={100} color="#c9170a" />

@@ -2,8 +2,9 @@ import { StyleSheet, Text, View, Animated, Easing, TouchableOpacity } from 'reac
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { Base_url } from '../../../App';
 
-const Index = () => {
+const Index = (props) => {
 
     const navigation = useNavigation();
     const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -32,11 +33,35 @@ const Index = () => {
         setSelectedOption(option);
     };
 
-    const handleSubmit = () => {
-        // Handle submit action
-        console.log('Feedback submitted');
-        navigation.navigate('Home');
+    const handleSubmit = async () => {
+        try {
+            const response = await fetch(`${Base_url}api/social-media-permission/${props.route.params}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // 'Authorization': `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    social_media_permission: selectedOption, // Assuming selectedOption is a state variable that holds the user's choice
+                }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                console.log('Social media permission submitted successfully', data);
+                navigation.navigate('Home');
+            } else {
+                console.error('Failed to submit social media permission', data);
+            }
+        } catch (error) {
+            console.error('Error submitting social media permission', error);
+        }
     };
+
+    useEffect(() => {
+        console.log("Video Id", props.route.params);
+    }, [])
+
 
     return (
         <View style={styles.pModalContainer}>

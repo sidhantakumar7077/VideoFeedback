@@ -79,8 +79,8 @@ const Login = () => {
             >
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' }}>
                     <Image
-                        source={require('../../assets/images/transLemoLogo.png')}
-                        style={{ height: 130, width: 130, resizeMode: 'contain' }}
+                        source={require('../../assets/images/logo_white.png')}
+                        style={{ height: 140, width: 140, resizeMode: 'contain' }}
                     />
                 </View>
                 <View style={styles.footer}>
