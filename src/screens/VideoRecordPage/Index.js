@@ -3,13 +3,14 @@ import { View, StyleSheet, TouchableOpacity, Text, PermissionsAndroid, Platform,
 import { useNavigation } from '@react-navigation/native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+// import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import KeepAwake from 'react-native-keep-awake';
 import { Video } from 'react-native-compressor';
 import RNFS from 'react-native-fs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
+import { Base_url } from '../../../App';
 
 const Index = () => {
 
@@ -207,7 +208,7 @@ const Index = () => {
                 name: 'compressed_video.mp4',
             });
 
-            const response = await fetch('https://admin.33crores.com/api/save-feedback-video', {
+            const response = await fetch(`${Base_url}api/save-feedback-video`, {
                 method: 'POST',
                 body: formData,
                 headers: {

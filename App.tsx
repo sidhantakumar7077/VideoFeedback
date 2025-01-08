@@ -21,7 +21,8 @@ import ThankYouPage from './src/screens/ThankYouPage/Index'
 
 const Stack = createNativeStackNavigator();
 
-export const Base_url = 'https://admin.33crores.com/';
+// export const Base_url = 'https://admin.33crores.com/';
+export const Base_url = 'https://feedback.mandirparikrama.com/';
 
 const App = () => {
 
